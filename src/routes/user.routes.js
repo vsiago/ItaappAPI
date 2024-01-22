@@ -15,13 +15,15 @@ User.get('/user/:id', (req, res) => {
 // POST USER
 User.post('/criar-usuario', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    console.log('chegou aqui')
+    const { username, email, password, role } = req.body;
 
     // Criar um novo usuário usando o modelo
     const novoUsuario = new userSchema({
       username,
       email,
       password,
+      role
     });
 
     // Salvar o usuário no banco de dados

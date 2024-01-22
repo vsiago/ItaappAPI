@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connectDataBase = async () => {
   try {
-    await mongoose.connect('vsiago21:9I6UHAP4AjyUoJt0@cluster0.jutvyn1.mongodb.net/criapp')
+    await mongoose.connect('mongodb+srv://vsiago21:9I6UHAP4AjyUoJt0@cluster0.jutvyn1.mongodb.net/Criapp')
     console.log('Conexao com o banco de dados estabelecida com sucesso')
   }
   catch (error) {

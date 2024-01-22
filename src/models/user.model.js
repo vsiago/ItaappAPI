@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+// Enum para representar os papéis disponíveis
+const roles = ['admin', 'client']
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -15,6 +18,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  role: {
+    type: String,
+    emum: roles,
+    default: 'client'
+  }
 });
 
 module.exports = mongoose.model('User', userSchema);
