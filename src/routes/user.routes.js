@@ -1,25 +1,33 @@
 const express = require('express');
-const userSchema = require('../models/user.model')
+const UserModel = require('../models/user.model')
 
 const User = express.Router()
-// GET ALL USERS
-User.get('/users', (req, res) => {
-  res.json({ "message": "Buscar todos os usuarios /users" })
-})
 
-// GET USER ID
-User.get('/user/:id', (req, res) => {
-  res.json({ "message": "Buscar por um usuario especifico" })
+// GET ALL USERS
+User.get('/users', async (req, res) => {
+  try {
+    const users = await UserModel.find({}, { password: 0 })
+
+    res.json(users)
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).send('Erro ao buscar usarios no banco de dados')
+  }
 })
 
 // POST USER
 User.post('/criar-usuario', async (req, res) => {
   try {
-    console.log('chegou aqui')
     const { username, email, password, role } = req.body;
 
+    const existingUser = await UserModel.findOne({ $or: [{ email }, { username }] })
+    if (existingUser) {
+      return res.status(400).json({ message: "Email ou username ja existe" })
+    }
+
     // Criar um novo usuário usando o modelo
-    const novoUsuario = new userSchema({
+    const novoUsuario = new UserModel({
       username,
       email,
       password,
@@ -38,12 +46,44 @@ User.post('/criar-usuario', async (req, res) => {
 
 
 // PUT USER
-User.put('/user/:id', (req, res) => {
-  res.json({ "message": "Editar um usuario especifico" })
+User.put('/user/:id', async (req, res) => {
+  const userId = req.params.id;
+  const { newPassword } = req.body;
+
+  try {
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario nao encontrado" })
+    }
+
+    user.password = newPassword;
+    const usuarioAtualizado = await user.save();
+
+    res.json({ message: "Senha do usuairio alterada com sucesso", user: usuarioAtualizado })
+  } catch (error) {
+    console.error('Erro ao alterar a senha do usuario', error);
+    res.status(500).send('Erro interno no servidor')
+  }
 })
 
-User.delete('/user/:id', (req, res) => {
-  res.json({ "message": "Deletar um usuario especifico" })
-})
+
+User.delete('/user/:id', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    // Encontrar e deletar o usuário pelo ID
+    const deletedUser = await UserModel.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    res.json({ message: 'Usuário deletado com sucesso', user: deletedUser });
+  } catch (error) {
+    console.error('Erro ao deletar usuário:', error);
+    res.status(500).send('Erro interno do servidor');
+  }
+});
 
 module.exports = User
